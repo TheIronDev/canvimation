@@ -34,6 +34,68 @@ class RenderObject {
 }
 
 /**
+ * Demo RenderObject that displays a dot on a globe
+ */
+class GlobeDot extends RenderObject {
+  constructor(ctx, width, height) {
+    super(ctx, width, height);
+
+    this.x = (Math.random() - 0.5) * width;
+    this.y = (Math.random() - 0.5) * height;
+    this.z = (Math.random() - 0.5) * height;
+
+    this.perspective = this.width * 0.8;
+    this.projection_center_x = this.width / 2;
+    this.projection_center_y = this.height / 2;
+
+    this.scaleProjected = 0;
+    this.xProjected = 0;
+    this.yProjected = 0;
+
+    this.theta = Math.random() * 2 * Math.PI; // Random value between [0, 2Pi]
+    this.phi = Math.acos((Math.random() * 2) - 1); // Random value between [0, Pi]
+  }
+  resizeUpdate(height, width) {
+    super.resizeUpdate(height, width);
+
+    this.perspective = this.width * 0.8;
+    this.projection_center_x = this.width / 2;
+    this.projection_center_y = this.height / 2;
+  }
+  update() {
+    this.theta += .01;
+  }
+  project() {
+    // Calculate the x, y, z coordinates in the 3D world
+    this.x = this.width / 3 * Math.sin(this.phi) * Math.cos(this.theta);
+    this.y = this.width / 3 * Math.cos(this.phi);
+    this.z = this.width / 3 * Math.sin(this.phi) * Math.sin(this.theta) + this.width / 3;
+    this.perspective = this.width * 0.8;
+
+    this.scaleProjected = this.perspective / (this.perspective + this.z); // distance from user
+    this.xProjected = (this.x * this.scaleProjected) + this.projection_center_x; // x position on 2d plane
+    this.yProjected = (this.y * this.scaleProjected) + this.projection_center_y; // y pos. on 2d plane
+  }
+  draw() {
+    this.project();
+    this.ctx.globalAlpha = Math.abs(1 - this.z / this.width);
+
+    this.ctx.beginPath();
+    const arc = [
+      this.xProjected,
+      this.yProjected,
+      5 * this.scaleProjected,
+      0,
+      2 * Math.PI
+    ];
+    this.ctx.arc(...arc);
+    this.ctx.fill();
+  }
+}
+
+
+
+/**
  * Class that handles rendering a scene onto a canvas
  */
 class CanvasScene {
@@ -141,6 +203,7 @@ class CanvasScene {
   }
 }
 
-const test = new CanvasScene(window, document, 'canvas', 200, RenderObject);
+// TODO(tystark) Remove these when I am in a more finished state.
+const test = new CanvasScene(window, document, 'canvas', 200, GlobeDot);
 test.start();
 
