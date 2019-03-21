@@ -1,26 +1,49 @@
-
+/**
+ * Class that represents a thing rendered.
+ */
 class RenderObject {
   constructor(ctx, width, height) {
     this.ctx = ctx;
     this.x = Math.random() * width;
     this.y = Math.random() * height;
+    this.size = 5;
     this.height = height;
     this.width = width;
   }
+
+  /**
+   * Renders the object onto the canvas
+   */
   draw() {
-    this.ctx.fillRect(this.x, this.y, 5, 5);
+    this.ctx.fillRect(this.x, this.y, this.size, this.size);
   }
-  update(width, height) {
-    if (width === this.width && this.height === height) return;
+
+  /**
+   * Resize the object based on the new width/height
+   * @param height
+   * @param width
+   */
+  resizeUpdate(height, width) {
     this.height = height;
     this.width = width;
     this.x = Math.random() * width;
     this.y = Math.random() * height;
   }
+
+  update() {}
 }
 
+/**
+ * Class that handles rendering a scene onto a canvas
+ */
 class CanvasScene {
-  constructor(window, document, canvasId = 'canvas',renderObjectCount = 100, renderObjectClass = RenderObject) {
+  constructor(
+      window,
+      document,
+      canvasId = 'canvas',
+      renderObjectCount = 100,
+      renderObjectClass = RenderObject
+  ) {
     this.window = window;
     this.document = document;
 
@@ -39,25 +62,52 @@ class CanvasScene {
     this.resize(); // Get appropriate canvas constraints
     this.init();
   }
+
+  /**
+   * Animates all the renderingObjects by updating their new locations,
+   * clearing the canvas, and drawing the renderingObjects in their new
+   * locations.
+   */
   animate() {
     this.window.requestAnimationFrame(() => this.animate());
     this.update();
     this.clear();
     this.draw();
   }
+
+  /**
+   * Binds an event listener for handling window resize.
+   */
   bindResize() {
     this.window.addEventListener('resize', () => this.resize());
   }
+
+  /**
+   * Clears the canvas
+   */
   clear() {
     this.ctx.clearRect(0, 0, this.width, this.height);
   }
+
+  /**
+   * Draws each of the render objects onto the canvas.
+   */
   draw() {
-    this.renderObjects.forEach(dot =>  dot.draw());
+    this.renderObjects.forEach(renderObject => renderObject.draw());
   }
+
+  /**
+   * Initializes the renderObjects to render.
+   */
   init() {
     let i = this.renderObjectCount;
-    while (i--) this.renderObjects.push(new this.RenderObjectClass(this.ctx, this.width, this.height));
+    while (i--) this.renderObjects.push(
+        new this.RenderObjectClass(this.ctx, this.width, this.height));
   }
+
+  /**
+   * Updates the canvas and height/width.
+   */
   resize() {
     this.width = this.canvas.offsetWidth;
     this.height = this.canvas.offsetHeight;
@@ -70,15 +120,27 @@ class CanvasScene {
       this.canvas.width = this.width;
       this.canvas.height = this.height;
     }
+
+    this.renderObjects.forEach(
+        renderObject => renderObject.resizeUpdate(this.height, this.width));
   }
+
+  /**
+   * Starts the game-loop.
+   */
   start() {
     this.window.requestAnimationFrame(() => this.animate())
   }
+
+  /**
+   * Calls the update method of each of the renderObjects.
+   */
   update() {
-    this.renderObjects.forEach((dot) => dot.update(this.width, this.height));
+    this.renderObjects.forEach(
+        renderObject => renderObject.update());
   }
 }
 
-const test = new CanvasScene(window, document);
+const test = new CanvasScene(window, document, 'canvas', 200, RenderObject);
 test.start();
 
