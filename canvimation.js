@@ -200,6 +200,9 @@ class CanvasScene {
     this.window = window;
     this.document = document;
 
+    this.lastDrawTime = 0;
+    this.fps = 0;
+
     this.canvas = this.document.getElementById(canvasId);
     this.ctx = this.canvas.getContext('2d');
 
@@ -221,10 +224,15 @@ class CanvasScene {
    * locations.
    */
   animate() {
+    const lastDrawTime = this.window.performance.now();
+    this.fps = ~~(1000 / (lastDrawTime - this.lastDrawTime));
+    this.lastDrawTime = lastDrawTime;
+
     this.window.requestAnimationFrame(() => this.animate());
     this.update();
     this.clear();
     this.draw();
+    this.drawFps();
   }
 
   /**
@@ -248,10 +256,15 @@ class CanvasScene {
     this.renderObjects.forEach(renderObject => renderObject.draw());
   }
 
+  drawFps() {
+    this.ctx.fillText(this.fps, 10, 10);
+  }
+
   /**
    * Initializes the renderObjects to render.
    */
   init() {
+    this.lastDrawTime = this.window.performance.now();
     let i = this.renderObjectCount;
     while (i--) this.renderObjects.push(
         new this.RenderObjectClass(this.ctx, this.width, this.height));
@@ -298,8 +311,10 @@ class CanvasScene {
 const circleTest = new CanvasScene(window, document, 'canvas', 80, CircleDot);
 const globetest = new CanvasScene(window, document, 'canvas', 200, GlobeDot);
 const slantedTest = new CanvasScene(window, document, 'canvas', 100, SlantedCircleDot);
+const performanceTest = new CanvasScene(window, document, 'canvas', 5000, GlobeDot);
 
-const test = slantedTest;
+// TODO(tystark) test with offscreen canvas
+const test = performanceTest;
 test.start();
 
 
