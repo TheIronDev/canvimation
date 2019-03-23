@@ -34,6 +34,43 @@ class RenderObject {
 }
 
 /**
+ * Demo RenderObject that displays a dot on a circle
+ */
+class CircleDot extends RenderObject {
+  constructor(ctx, width, height) {
+    super(ctx, width, height);
+
+    this.x = 0;
+    this.y = 0;
+    this.angle = Math.floor(Math.random() * 360);
+    this.radius = width / 4;
+  }
+  update() {
+    this.angle += 1;
+  }
+  project() {
+    const theta = this.angle * Math.PI / 180;
+
+    this.x = this.radius * Math.cos(theta) + this.width / 2;
+    this.y = this.radius * Math.sin(theta) + this.height / 2;
+  }
+  draw() {
+    this.project();
+
+    this.ctx.beginPath();
+    const arc = [
+      this.x,
+      this.y,
+      3,
+      0,
+      2 * Math.PI
+    ];
+    this.ctx.arc(...arc);
+    this.ctx.fill();
+  }
+}
+
+/**
  * Demo RenderObject that displays a dot on a globe
  */
 class GlobeDot extends RenderObject {
@@ -122,7 +159,6 @@ class CanvasScene {
 
     this.bindResize();
     this.resize(); // Get appropriate canvas constraints
-    this.init();
   }
 
   /**
@@ -191,6 +227,7 @@ class CanvasScene {
    * Starts the game-loop.
    */
   start() {
+    this.init();
     this.window.requestAnimationFrame(() => this.animate())
   }
 
@@ -204,6 +241,10 @@ class CanvasScene {
 }
 
 // TODO(tystark) Remove these when I am in a more finished state.
-const test = new CanvasScene(window, document, 'canvas', 200, GlobeDot);
+const circleTest = new CanvasScene(window, document, 'canvas', 80, CircleDot);
+const globetest = new CanvasScene(window, document, 'canvas', 200, GlobeDot);
+
+const test = circleTest;
 test.start();
+
 
