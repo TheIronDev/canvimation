@@ -24,10 +24,16 @@ class RenderObject {
    * @param width
    */
   resizeUpdate(height, width) {
+    // 2d resize updates
     this.height = height;
     this.width = width;
     this.x = Math.random() * width;
     this.y = Math.random() * height;
+
+    // 3d resize updates
+    this.perspective = this.width * 0.8;
+    this.projection_center_x = this.width / 2;
+    this.projection_center_y = this.height / 2;
   }
 
   update() {}
@@ -70,6 +76,61 @@ class CircleDot extends RenderObject {
   }
 }
 
+
+/**
+ * Demo RenderObject that displays a dot on a globe
+ */
+class SlantedCircleDot extends RenderObject {
+  constructor(ctx, width, height) {
+    super(ctx, width, height);
+
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
+    this.theta = Math.floor(Math.random() * 360);
+    this.phi = 45;
+    this.radius = width / 4;
+
+    this.perspective = 0;
+    this.projection_center_x = this.width / 2;
+    this.projection_center_y = this.height / 2;
+
+    this.scaleProjected = 0;
+    this.xProjected = 0;
+    this.yProjected = 0;
+  }
+  update() {
+    this.theta += .01;
+  }
+  project() {
+
+    this.x = this.width / 3 * Math.sin(this.phi) * Math.cos(this.theta);
+    this.y = this.height / 2 * Math.sin(this.phi);
+    this.z = this.width / 3 * Math.sin(this.phi) * Math.sin(this.theta) + this.width / 3;
+
+    this.perspective = this.width * .8;
+
+    this.scaleProjected = this.perspective / (this.perspective + this.z); // distance from user
+    this.xProjected = (this.x * this.scaleProjected) + this.projection_center_x; // x position on 2d plane
+    this.yProjected = (this.y * this.scaleProjected) + this.projection_center_y  / 2; // y pos. on 2d plane
+  }
+  draw() {
+    this.project();
+    this.ctx.globalAlpha = Math.abs(1 - this.z / this.width);
+
+    this.ctx.beginPath();
+    const arc = [
+      this.xProjected,
+      this.yProjected,
+      5 * this.scaleProjected,
+      0,
+      2 * Math.PI
+    ];
+    this.ctx.arc(...arc);
+    this.ctx.fill();
+  }
+}
+
 /**
  * Demo RenderObject that displays a dot on a globe
  */
@@ -91,13 +152,6 @@ class GlobeDot extends RenderObject {
 
     this.theta = Math.random() * 2 * Math.PI; // Random value between [0, 2Pi]
     this.phi = Math.acos((Math.random() * 2) - 1); // Random value between [0, Pi]
-  }
-  resizeUpdate(height, width) {
-    super.resizeUpdate(height, width);
-
-    this.perspective = this.width * 0.8;
-    this.projection_center_x = this.width / 2;
-    this.projection_center_y = this.height / 2;
   }
   update() {
     this.theta += .01;
@@ -243,8 +297,9 @@ class CanvasScene {
 // TODO(tystark) Remove these when I am in a more finished state.
 const circleTest = new CanvasScene(window, document, 'canvas', 80, CircleDot);
 const globetest = new CanvasScene(window, document, 'canvas', 200, GlobeDot);
+const slantedTest = new CanvasScene(window, document, 'canvas', 100, SlantedCircleDot);
 
-const test = circleTest;
+const test = slantedTest;
 test.start();
 
 
