@@ -171,16 +171,10 @@ class GlobeDot extends RenderObject {
     this.project();
     this.ctx.globalAlpha = Math.abs(1 - this.z / this.width);
 
-    this.ctx.beginPath();
-    const arc = [
-      this.xProjected,
-      this.yProjected,
-      5 * this.scaleProjected,
-      0,
-      2 * Math.PI
-    ];
-    this.ctx.arc(...arc);
-    this.ctx.fill();
+    const radius = 5 * this.scaleProjected;
+
+    // this.ctx.fillRect(this.xProjected, this.yProjected, radius, radius); // Faster performance
+    this.ctx.drawImage(this.ctx.canvas.particle, this.xProjected, this.yProjected, radius, radius);
   }
 }
 
@@ -193,7 +187,16 @@ class CanvasScene {
     this.lastDrawTime = 0;
     this.fps = 0;
 
+    // Pre-draw particle
+    const particleSize = 10;
+    const particleCanvas = new OffscreenCanvas(particleSize, particleSize);
+    const particleCtx = particleCanvas.getContext('2d');
+    particleCtx.beginPath();
+    particleCtx.arc(particleSize/2, particleSize/2, particleSize/2, 0, 2* Math.PI);
+    particleCtx.fill();
+
     this.canvas = canvas;
+    this.canvas.particle = particleCanvas;
     this.ctx = canvas.getContext('2d');
 
     this.renderObjectCount = renderObjectCount;
